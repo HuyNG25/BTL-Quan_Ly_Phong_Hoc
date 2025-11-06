@@ -49,14 +49,14 @@ Hệ thống Quản lý Phòng Học giúp tối ưu hóa việc sử dụng cơ
 
 ## 🚀 3. Hình ảnh các chức năng
 ### Trang đăng nhập
-<img width="1902" height="931" alt="image" src="./login" />
+<img width="1902" height="931" alt="image" src="./login.jpg" />
 ### Trang index
 <img width="1885" height="467" alt="image" src="" />
 <img width="1885" height="467" alt="image" src="" />
 ### Trang dashboard admin
-<img width="1886" height="940" alt="image" src="./dashboard_admin" />
+<img width="1886" height="940" alt="image" src="./dashboard_admin.jpg" />
 ### Trang thông tin tài khoản    
-<img width="1890" height="932" alt="image" src="./user" />
+<img width="1890" height="932" alt="image" src="./user.jpg" />
 ### Trang người dùng 
 <img width="1901" height="939" alt="image" src="" />
 ### Trang quản lý phòng học
