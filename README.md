@@ -49,21 +49,28 @@ Hệ thống Quản lý Phòng Học giúp tối ưu hóa việc sử dụng cơ
 
 ## 🚀 3. Hình ảnh các chức năng
 ### Trang đăng nhập
-<img width="1902" height="931" alt="image" src="" />
+<img width="1902" height="931" alt="image" src="./login" />
 ### Trang index
 <img width="1885" height="467" alt="image" src="" />
 <img width="1885" height="467" alt="image" src="" />
 ### Trang dashboard admin
-<img width="1886" height="940" alt="image" src="" />
-### Trang quản lý phòng     
-<img width="1890" height="932" alt="image" src="" />
-### Trang quản lý loại phòng 
+<img width="1886" height="940" alt="image" src="./dashboard_admin" />
+### Trang thông tin tài khoản    
+<img width="1890" height="932" alt="image" src="./user" />
+### Trang người dùng 
 <img width="1901" height="939" alt="image" src="" />
-### Trang quản lý quản lý đặt phòng
+### Trang quản lý phòng học
 <img width="1892" height="938" alt="image" src="" />
-### Trang quản lý quản lý khách 
+### Trang quản lý môn học
 <img width="1882" height="937" alt="image" src="" />
-
+### Trang quản lý lịch học
+<img width="1882" height="937" alt="image" src="" />
+### Trang quản lý thời khoá biểu cá nhân
+<img width="1882" height="937" alt="image" src="" />
+### Trang báo cáo & thống kê
+<img width="1882" height="937" alt="image" src="" />
+### Thông báo hệ thống
+<img width="1882" height="937" alt="image" src="" />
 ## ⚙️ 4. Cài đặt
 
 ### 4.1. Cài đặt công cụ, môi trường và các thư viện cần thiết
