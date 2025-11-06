@@ -81,7 +81,7 @@ Clone project về thư mục `htdocs` của XAMPP (ví dụ ổ C):
 
 ```bash
 cd C:\xampp\htdocs
-https://github.com/ngocminhkien/BTL_Quan_ly_khach_san.git
+https://github.com/HuyNG25/BTL-Quan_Ly_Phong_Hoc.git
 Truy cập project qua đường dẫn:
 👉 http://localhost/QuanLyPhongHoc
 ```
