@@ -58,9 +58,9 @@ Hệ thống Quản lý Phòng Học giúp tối ưu hóa việc sử dụng cơ
 ### Trang thông tin tài khoản    
 <img width="1890" height="932" alt="image" src="./user.png" />
 ### Trang người dùng 
-<img width="1901" height="939" alt="image" src="" />
+<img width="1901" height="939" alt="image" src="./nguoidung.png" />
 ### Trang quản lý phòng học
-<img width="1892" height="938" alt="image" src="" />
+<img width="1892" height="938" alt="image" src="./phonghoc.png" />
 ### Trang quản lý môn học
 <img width="1882" height="937" alt="image" src="" />
 ### Trang quản lý lịch học
@@ -70,7 +70,7 @@ Hệ thống Quản lý Phòng Học giúp tối ưu hóa việc sử dụng cơ
 ### Trang báo cáo & thống kê
 <img width="1882" height="937" alt="image" src="" />
 ### Thông báo hệ thống
-<img width="1882" height="937" alt="image" src="" />
+<img width="1882" height="937" alt="image" src="./thongbao.png" />
 ## ⚙️ 4. Cài đặt
 
 ### 4.1. Cài đặt công cụ, môi trường và các thư viện cần thiết
