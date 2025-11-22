@@ -66,7 +66,7 @@ Hệ thống Quản lý Phòng Học giúp tối ưu hóa việc sử dụng cơ
 ### Trang quản lý lịch học
 <img width="1882" height="937" alt="image" src="" />
 ### Trang báo cáo & thống kê
-<img width="1882" height="937" alt="image" src="" />
+<img width="1882" height="937" alt="image" src="./baocao.png" />
 ### Thông báo hệ thống
 <img width="1882" height="937" alt="image" src="./thongbao.png" />
 ## ⚙️ 4. Cài đặt
