@@ -1,7 +1,63 @@
-<?php include 'header.php'; ?>
-<?php include 'sidebar.php'; ?>
-<?php
+<?php 
+session_start(); // Đảm bảo session được khởi động
 require_once '../../functions/db_connect.php';
+require_once '../../functions/ScheduleFunctions.php'; // CẦN INCLUDE FILE LOGIC XỬ LÝ
+
+// =========================================================================
+//                           LOGIC XỬ LÝ POST REQUEST (ĐẶT PHÒNG)
+// =========================================================================
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    
+    // Nếu hành động là YÊU CẦU ĐẶT PHÒNG từ giảng viên
+    if ($_POST['action'] === 'request_booking') {
+        
+        $sFn = new ScheduleFunctions();
+        
+        // Lấy dữ liệu từ form
+        // Đảm bảo các trường này tồn tại trong form room_lookup.php đã sửa
+        $room_id = intval($_POST['room_id'] ?? 0);
+        $user_id = intval($_POST['user_id'] ?? 0); 
+        $subject_id = intval($_POST['subject_id'] ?? 0); 
+        $date = trim($_POST['date'] ?? '');
+        $start_time_only = trim($_POST['start_time'] ?? '');
+        $end_time_only = trim($_POST['end_time'] ?? '');
+        $note = trim($_POST['note'] ?? ''); 
+        
+        // Kiểm tra dữ liệu bắt buộc
+        if ($room_id > 0 && $user_id > 0 && $subject_id > 0 && $date && $start_time_only && $end_time_only) {
+            
+            // Kết hợp ngày và giờ thành DATETIME format cho MySQL
+            $start_time = $date . ' ' . $start_time_only;
+            $end_time = $date . ' ' . $end_time_only;
+
+            // Gọi hàm thêm lịch dạy
+            $res = $sFn->addSchedule($room_id, $user_id, $subject_id, $start_time, $end_time, $note);
+            
+            if ($res === true) {
+                $_SESSION['success_message'] = "✅ Yêu cầu đặt phòng đã được gửi thành công.";
+            } elseif ($res === "conflict") {
+                $_SESSION['error_message'] = "❌ Phòng học đã có lịch trong khoảng thời gian này. Vui lòng chọn giờ khác.";
+            } else {
+                $_SESSION['error_message'] = "⚠️ Lỗi khi gửi yêu cầu đặt phòng.";
+            }
+        } else {
+             $_SESSION['error_message'] = "❌ Dữ liệu đặt phòng không hợp lệ hoặc thiếu thông tin.";
+        }
+        
+        // Sau khi xử lý, chuyển hướng người dùng về trang tra cứu phòng học
+        header("Location: ../views/room_lookup.php");
+        exit;
+    }
+
+    // ... (Thêm các logic xử lý POST khác nếu có)
+}
+
+// =========================================================================
+//                           HIỂN THỊ DASHBOARD (Dashboard)
+// =========================================================================
+
+// Nếu không phải là POST request xử lý hành động, thì tiếp tục hiển thị Dashboard
 $conn = connectDB();
 
 // Lấy dữ liệu thống kê
@@ -12,20 +68,23 @@ $result_schedules = $conn->query("SELECT COUNT(*) as total FROM schedules");
 $total_rooms = $result_rooms->fetch_assoc()['total'];
 $total_users = $result_users->fetch_assoc()['total'];
 $total_schedules = $result_schedules->fetch_assoc()['total'];
-?>
+closeDB($conn); // Đóng kết nối sau khi lấy dữ liệu
 
-<!-- ====== Giao diện Dashboard ====== -->
+?>
+<?php include 'header.php'; ?>
+<?php include 'sidebar.php'; ?>
+
 <div class="container-fluid px-4 py-4">
     <h2 class="fw-bold mb-4 text-primary">📊 Tổng quan hệ thống</h2>
 
-    <!-- Thẻ thống kê -->
-    <div class="row g-4">
+        <div class="row g-4">
         <div class="col-md-4">
             <div class="card shadow-lg border-0 rounded-4 p-4 text-center" style="background: linear-gradient(135deg, #00b4db, #0083b0); color: white;">
                 <h5 class="mb-2">Phòng học</h5>
                 <h1 class="fw-bold"><?= $total_rooms ?></h1>
                 <i class="bi bi-building fs-2"></i>
             </div>
+            
         </div>
         <div class="col-md-4">
             <div class="card shadow-lg border-0 rounded-4 p-4 text-center" style="background: linear-gradient(135deg, #56ab2f, #a8e063); color: white;">
@@ -43,8 +102,7 @@ $total_schedules = $result_schedules->fetch_assoc()['total'];
         </div>
     </div>
 
-    <!-- Phần bảng tổng hợp nhỏ -->
-    <div class="card mt-5 shadow-sm border-0 rounded-4">
+        <div class="card mt-5 shadow-sm border-0 rounded-4">
         <div class="card-header bg-primary text-white rounded-top-4">
             <h5 class="mb-0">📅 Tóm tắt dữ liệu</h5>
         </div>
@@ -83,7 +141,6 @@ $total_schedules = $result_schedules->fetch_assoc()['total'];
     </div>
 </div>
 
-<!-- CSS bổ sung -->
 <style>
 body {
     background: #f5f7fa;
@@ -98,3 +155,4 @@ body {
 </style>
 
 <?php include 'footer.php'; ?>
+
