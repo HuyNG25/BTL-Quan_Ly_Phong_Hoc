@@ -14,7 +14,7 @@ $userFn = new UserFunctions();
 if (isset($_POST['add_user'])) {
     $fullname = trim($_POST['fullname']);
     $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
+    $password = trim($_POST['password']); // Đã sửa để lưu Plain Text trong UserFunctions
     $role = $_POST['role'] ?? 'giangvien';
 
     if ($userFn->addUser($fullname, $email, $password, $role)) {
@@ -43,7 +43,7 @@ if (isset($_POST['update_user'])) {
 // Change password
 if (isset($_POST['change_password'])) {
     $id = intval($_POST['user_id']);
-    $newPass = trim($_POST['new_password']);
+    $newPass = trim($_POST['new_password']); // Đã sửa để lưu Plain Text trong UserFunctions
 
     if ($userFn->changePassword($id, $newPass)) {
         header("Location: ../views/users.php?msg=pwchanged");
