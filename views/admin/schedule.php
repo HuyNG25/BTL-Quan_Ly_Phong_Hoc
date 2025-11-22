@@ -1,10 +1,20 @@
-<?php include 'header.php'; ?>
-<?php include 'sidebar.php'; ?>
 <?php
-// Đảm bảo đường dẫn đến file ScheduleFunctions.php là chính xác
+include 'header.php';
+include 'sidebar.php';
+
 require_once '../../functions/ScheduleFunctions.php';
+require_once '../../functions/LecturerFunctions.php';
+require_once '../../functions/db_connect.php';
+
+$conn = connectDB();
 $scheduleFn = new ScheduleFunctions();
 $schedules = $scheduleFn->getAllSchedules();
+
+// Lấy tất cả môn học để tạo map [subject_id => subject_name]
+$allSubjects = getAllSubjects($conn);
+$subjectMap = array_column($allSubjects, 'subject_name', 'subject_id');
+
+closeDB($conn);
 ?>
 
 <div class="container-fluid py-4">
@@ -24,7 +34,8 @@ $schedules = $scheduleFn->getAllSchedules();
                                     <th>Bắt đầu</th>
                                     <th>Kết thúc</th>
                                     <th>Ghi chú</th>
-                                    <th class="text-center">Thao tác</th> </tr>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($schedules)): ?>
@@ -35,11 +46,11 @@ $schedules = $scheduleFn->getAllSchedules();
                                     <?php foreach ($schedules as $s): ?>
                                         <tr>
                                             <td class="text-center"><?= $s['schedule_id'] ?></td>
-                                            <td><?= $s['room_id'] ?></td>
-                                            <td><?= $s['user_id'] ?></td>
-                                            <td><?= htmlspecialchars($s['subject_name']) ?></td>
-                                            <td><?= $s['start_time'] ?></td>
-                                            <td><?= $s['end_time'] ?></td>
+                                            <td><?= htmlspecialchars($s['room_name'] ?? $s['room_id']) ?></td>
+                                            <td><?= htmlspecialchars($s['lecturer_name'] ?? $s['user_id']) ?></td>
+                                            <td><?= htmlspecialchars($subjectMap[$s['user_id']] ?? $s['subject_name']) ?></td>
+                                            <td><?= date('H:i', strtotime($s['start_time'])) ?></td>
+                                            <td><?= date('H:i', strtotime($s['end_time'])) ?></td>
                                             <td><?= htmlspecialchars($s['note']) ?></td>
                                             <td class="text-center text-nowrap">
                                                 <a href="edit_schedule.php?id=<?= $s['schedule_id'] ?>" class="btn btn-sm btn-info me-2" title="Sửa">
