@@ -15,7 +15,6 @@ $users = $userFn->getAllUsers();
         <option value="">Tất cả vai trò</option>
         <option value="admin">Admin</option>
         <option value="giangvien">Giảng viên</option>
-        <option value="sinhvien">Sinh viên</option>
       </select>
     </div>
   </div>
@@ -25,7 +24,7 @@ $users = $userFn->getAllUsers();
       <table id="userTable" class="table table-hover align-middle mb-0">
         <thead class="table-light">
           <tr>
-            <th>#</th>
+            <th>ID</th>
             <th>👤 Họ tên</th>
             <th>✉️ Email</th>
             <th>🔑 Vai trò</th>
