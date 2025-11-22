@@ -99,7 +99,7 @@ $current_room_display = $current_room['room_name'] ?? 'N/A';
                     <div class="card shadow-lg border-0 rounded-4 p-4 text-center" style="background: linear-gradient(135deg, #108dc7, #5c99e7); color: white;">
                         <h5 class="mb-2 fw-semibold"><i class="fas fa-clock me-1"></i> Lịch dạy Hôm nay</h5>
                         <h1 class="fw-bold"><?= $total_schedules_today ?></h1>
-                        <p class="mb-0">Ca học trong ngày</p>
+                        <p class="mb-0">Ca dạy trong ngày</p>
                     </div>
                 </div>
                 
@@ -169,7 +169,7 @@ $current_room_display = $current_room['room_name'] ?? 'N/A';
                                 <ul class="list-group list-group-flush">
                                     <?php foreach ($latest_notifications as $notif): ?>
                                     <li class="list-group-item">
-                                        <a href="view_notification.php?id=<?= $notif['noti_id'] ?>" class="text-decoration-none d-block"> 
+                                        <a href="../view_notification.php" class="text-decoration-none d-block"> 
                                             <h6 class="mb-1 fw-bold text-dark"><?= htmlspecialchars($notif['title']) ?></h6>
                                             <p class="mb-0 small text-muted">
                                                 <?= date('H:i d/m/Y', strtotime($notif['created_at'])) ?>
