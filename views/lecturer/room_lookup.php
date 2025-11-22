@@ -2,6 +2,7 @@
 session_start();
 require_once('../../functions/db_connect.php');
 require_once('../../functions/LecturerFunctions.php');
+require_once('../../functions/ScheduleFunctions.php');
 
 if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'giangvien') {
     header('Location: ../../login.php');
@@ -9,187 +10,178 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'giangvien') {
 }
 
 $conn = connectDB();
+$lecturer_id = $_SESSION['user']['user_id'];
+
 $rooms = getAllRooms($conn); 
-$classes = getAllClasses($conn);
+$scheduleFn = new ScheduleFunctions();
+$subjects = $scheduleFn->getSubjectsByLecturerId($lecturer_id); 
+$classes = $scheduleFn->getAllClasses(); 
+
 closeDB($conn);
 ?>
 
 <!DOCTYPE html>
+
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <title>Tra Cứu Phòng Học</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <style>
-        body { background: #f4f6f9; }
-        .page-title { font-size: 28px; font-weight: 700; margin-bottom: 15px; }
-        #back-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
+        body { 
+            background: #f4f6f9; 
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+        .page-title { font-size: 28px; font-weight: 700; margin-bottom: 20px; }
+        .card { border-radius: 15px; }
+        .table-hover tbody tr:hover { background: rgba(0,123,255,0.05); }
+        #back-btn { margin-bottom: 20px; }
+        .modal-header { border-bottom: none; }
+        .modal-footer { border-top: none; }
+        .form-label { font-weight: 600; }
     </style>
 </head>
-
 <body class="p-4">
 
-    <div class="container">
+<div class="container">
 
-        <h1 class="page-title">🏫 Tra Cứu Phòng Học & Đặt Phòng</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="page-title">🏫 Tra Cứu Phòng Học & Đặt Phòng</h1>
+    <a href="dashboard_lecturer.php" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Quay về trang chủ
+    </a>
+</div>
 
-        <!-- THÔNG BÁO -->
-        <?php if (isset($_SESSION['success_message'])): ?>
-            <div class="alert alert-success"><?= $_SESSION['success_message']; ?></div>
-        <?php unset($_SESSION['success_message']); endif; ?>
+<?php if (isset($_SESSION['success_message'])): ?>
+    <div class="alert alert-success"><?= $_SESSION['success_message']; ?></div>
+<?php unset($_SESSION['success_message']); endif; ?>
 
-        <?php if (isset($_SESSION['error_message'])): ?>
-            <div class="alert alert-danger"><?= $_SESSION['error_message']; ?></div>
-        <?php unset($_SESSION['error_message']); endif; ?>
+<?php if (isset($_SESSION['error_message'])): ?>
+    <div class="alert alert-danger"><?= $_SESSION['error_message']; ?></div>
+<?php unset($_SESSION['error_message']); endif; ?>
 
+<div class="mb-3">
+    <input type="text" id="searchInput" class="form-control rounded-pill"
+           placeholder="🔍 Tìm phòng theo tên, sức chứa,...">
+</div>
 
-        <!-- TÌM KIẾM -->
-        <div class="mb-3">
-            <input type="text" id="searchInput" class="form-control"
-                   placeholder="🔍 Tìm phòng theo tên, sức chứa, thiết bị...">
-        </div>
+<div class="card shadow-sm mt-3">
+    <div class="card-header bg-primary text-white fw-bold rounded-top-3">
+        Danh Sách Phòng
+    </div>
 
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0" id="roomTable">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Tên Phòng</th>
+                    <th>Sức chứa</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($rooms as $room): ?>
+                <tr>
+                    <td><?= $room['room_id']; ?></td>
+                    <td class="fw-bold"><?= $room['room_name']; ?></td>
+                    <td><?= $room['capacity']; ?></td>
+                    <td><span class="badge bg-info">Kiểm tra khi đặt</span></td>
+                    <td>
+                        <button 
+                            class="btn btn-sm btn-success"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#bookingModal"
+                            data-room="<?= $room['room_id']; ?>"
+                            data-roomname="<?= $room['room_name']; ?>"
+                        >Đặt phòng</button>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-        <!-- DANH SÁCH PHÒNG -->
-        <div class="card shadow-sm mt-3">
-            <div class="card-header bg-primary text-white fw-bold">
-                Danh Sách Phòng
-            </div>
-
-            <div class="card-body p-0">
-                <table class="table table-hover mb-0" id="roomTable">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên Phòng</th>
-                            <th>Sức chứa</th>
-                            <th>Thiết bị</th>
-                            <th>Trạng thái</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <?php foreach ($rooms as $room): ?>
-                        <tr>
-                            <td><?= $room['room_id']; ?></td>
-                            <td class="fw-bold"><?= $room['room_name']; ?></td>
-                            <td><?= $room['capacity']; ?></td>
-                            <td><?= $room['equipment']; ?></td>
-
-                            <td>
-                                <span class="badge bg-info">Kiểm tra khi đặt</span>
-                            </td>
-
-                            <td>
-                                <button 
-                                    class="btn btn-sm btn-success"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#bookingModal"
-                                    data-room="<?= $room['room_id']; ?>"
-                                    data-roomname="<?= $room['room_name']; ?>"
-                                >
-                                    Đặt phòng
-                                </button>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-
-                </table>
-            </div>
-        </div>
-        <!-- MODAL ĐẶT PHÒNG -->
-
+<!-- Modal đặt phòng -->
 <div class="modal fade" id="bookingModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-        <form action="../../handles/handle_admin_request.php" method="POST">
-            <input type="hidden" name="action" value="request_booking">
-            <input type="hidden" name="room_id" id="modal_room_id">
+            <form action="../../handles/handle_admin_request.php" method="POST">
+                <input type="hidden" name="action" value="request_booking">
+                <input type="hidden" name="room_id" id="modal_room_id">
+                <input type="hidden" name="user_id" value="<?= $_SESSION['user']['user_id']; ?>"> 
+                
+                <div class="modal-header bg-success text-white rounded-top-3">
+                    <h5 class="modal-title" id="room_title">Đặt phòng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
 
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="room_title">Đặt phòng</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+                <div class="modal-body">
+                    <label class="form-label">Chọn Môn học:</label>
+                    <select name="subject_id" class="form-select mb-3" required>
+                        <option value="">-- Chọn môn học --</option>
+                        <?php if (!empty($subjects)) foreach ($subjects as $subject): ?>
+                            <option value="<?= $subject['subject_id']; ?>"><?= $subject['subject_name']; ?></option>
+                        <?php endforeach; ?>
+                    </select>
 
-            <div class="modal-body">
+                    <label class="form-label">Chọn Lớp học:</label>
+                    <select name="class_id" class="form-select mb-3" required>
+                        <option value="">-- Chọn lớp học --</option>
+                        <?php if (!empty($classes)) foreach ($classes as $class): ?>
+                            <option value="<?= $class['class_id']; ?>"><?= $class['class_name']; ?></option>
+                        <?php endforeach; ?>
+                    </select>
 
-                <!-- Mục chọn lớp học -->
-                <label class="fw-bold">Chọn Lớp học:</label>
-                <select name="class_id" class="form-select mb-3" required>
-                    <option value="">-- Chọn lớp --</option>
-                    <?php foreach ($classes as $class): ?>
-                        <option value="<?= $class['class_id']; ?>"><?= $class['class_name']; ?></option>
-                    <?php endforeach; ?>
-                </select>
+                    <label class="form-label">Ngày đặt:</label>
+                    <input type="date" name="date" class="form-control mb-3" required>
 
-                <label class="fw-bold">Ngày đặt:</label>
-                <input type="date" name="date" class="form-control" required>
+                    <label class="form-label">Giờ bắt đầu:</label>
+                    <input type="time" name="start_time" class="form-control mb-3" required>
 
-                <label class="fw-bold mt-3">Giờ bắt đầu:</label>
-                <input type="time" name="start_time" class="form-control" required>
+                    <label class="form-label">Giờ kết thúc:</label>
+                    <input type="time" name="end_time" class="form-control mb-3" required>
 
-                <label class="fw-bold mt-3">Giờ kết thúc:</label>
-                <input type="time" name="end_time" class="form-control" required>
+                    <label class="form-label">Mục đích sử dụng:</label>
+                    <textarea name="note" class="form-control mb-0" rows="3" required></textarea>
+                </div>
 
-                <label class="fw-bold mt-3">Mục đích sử dụng:</label>
-                <textarea name="purpose" class="form-control" rows="3" required></textarea>
-
-            </div>
-
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-success px-4">Gửi yêu cầu</button>
-            </div>
-
-        </form>
-
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success px-4">Gửi yêu cầu</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
-```
 
-</div>
+</div> 
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var bookingModal = document.getElementById('bookingModal');
+    bookingModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var roomId = button.getAttribute('data-room');
+        var roomName = button.getAttribute('data-roomname');
+        bookingModal.querySelector('#room_title').textContent = 'Đặt Phòng: ' + roomName;
+        bookingModal.querySelector('#modal_room_id').value = roomId;
+    });
 
-
-    <!-- NÚT QUAY LẠI -->
-    <a id="back-btn" href="dashboard_lecturer.php" class="btn btn-secondary">
-        ⬅ Quay lại
-    </a>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        // Đổ dữ liệu phòng vào modal
-        const bookingModal = document.getElementById('bookingModal');
-        bookingModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const roomID = button.getAttribute('data-room');
-            const roomName = button.getAttribute('data-roomname');
-
-            document.getElementById('modal_room_id').value = roomID;
-            document.getElementById('room_title').innerText = "Đặt phòng: " + roomName;
-        });
-
-
-        // TÌM KIẾM REALTIME
-        document.getElementById("searchInput").addEventListener("keyup", function () {
-            const keyword = this.value.toLowerCase();
-            const rows = document.querySelectorAll("#roomTable tbody tr");
-
-            rows.forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(keyword) ? "" : "none";
-            });
-        });
-    </script>
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        var filter = this.value.toUpperCase();
+        var table = document.getElementById('roomTable');
+        var tr = table.getElementsByTagName('tr');
+        for (var i = 1; i < tr.length; i++) {
+            tr[i].style.display = tr[i].textContent.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+        }
+    });
+});
+</script>
 
 </body>
 </html>
