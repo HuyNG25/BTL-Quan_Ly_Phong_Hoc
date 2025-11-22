@@ -16,9 +16,7 @@ class UserFunctions {
         $res = $stmt->get_result();
 
         if ($user = $res->fetch_assoc()) {
-            // SỬA ĐỔI: So sánh mật khẩu thuần túy trực tiếp.
-            // Điều này yêu cầu mật khẩu trong DB phải là văn bản thuần túy.
-            // ************ CỰC KỲ KHÔNG AN TOÀN ************
+            // SỬ DỤNG MẬT KHẨU THUẦN TÚY: So sánh trực tiếp
             if ($password === $user['password']) { 
                 return $user;
             }
@@ -26,23 +24,21 @@ class UserFunctions {
         return false;
     }
 
-    // Hàm addUser và changePassword cũng cần được sửa để không hash mật khẩu nữa
+    // Thêm người dùng (Lưu mật khẩu Plain Text)
     public function addUser($fullname, $email, $password, $role = 'giangvien') {
-        // SỬA ĐỔI: Loại bỏ password_hash()
         $stmt = $this->conn->prepare("INSERT INTO users (fullname, email, password, role) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $fullname, $email, $password, $role);
         return $stmt->execute();
     }
 
-    // Đổi mật khẩu
+    // Đổi mật khẩu (Cập nhật mật khẩu Plain Text)
     public function changePassword($id, $newPassword) {
-        // SỬA ĐỔI: Loại bỏ password_hash()
         $stmt = $this->conn->prepare("UPDATE users SET password = ? WHERE user_id = ?");
         $stmt->bind_param("si", $newPassword, $id);
         return $stmt->execute();
     }
     
-    // Các hàm khác (getAllUsers, getUserById, updateUser, deleteUser) giữ nguyên
+    // Các hàm khác
     public function getAllUsers() {
         $sql = "SELECT user_id, fullname, email, role, created_at FROM users ORDER BY user_id DESC";
         $res = $this->conn->query($sql);
@@ -57,6 +53,7 @@ class UserFunctions {
         return $res->fetch_assoc();
     }
 
+    // Cập nhật thông tin cơ bản (fullname, email, role)
     public function updateUser($id, $fullname, $email, $role) {
         $stmt = $this->conn->prepare("UPDATE users SET fullname = ?, email = ?, role = ? WHERE user_id = ?");
         $stmt->bind_param("sssi", $fullname, $email, $role, $id);
