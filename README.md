@@ -62,7 +62,7 @@ Hệ thống Quản lý Phòng Học giúp tối ưu hóa việc sử dụng cơ
 ### Trang quản lý phòng học
 <img width="1892" height="938" alt="image" src="./phonghoc.png" />
 ### Trang quản lý môn học
-<img width="1882" height="937" alt="image" src="" />
+<img width="1882" height="937" alt="image" src="./monhoc.png" />
 ### Trang quản lý lịch học
 <img width="1882" height="937" alt="image" src="" />
 ### Trang báo cáo & thống kê
