@@ -5,12 +5,20 @@ require_once '../../functions/db_connect.php';
 require_once '../../functions/RoomFunctions.php';
 require_once '../../functions/GeneralFunctions.php'; 
 
+// --- Logic kiểm tra quyền Admin nếu chưa có ---
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+    header('Location: ../../login.php');
+    exit();
+}
+// ---------------------------------------------
+
 // Lấy dữ liệu
 $roomFn = new RoomFunctions();
 $rooms = $roomFn->getAllRooms();
 
 $conn = connectDB();
-$pending_requests = getPendingRoomRequests($conn); // Lấy yêu cầu chờ duyệt (Sử dụng hàm đã sửa lỗi SQL)
+// Cần đảm bảo hàm getPendingRoomRequests tồn tại trong GeneralFunctions.php
+$pending_requests = getPendingRoomRequests($conn); 
 closeDB($conn);
 ?>
 
@@ -142,21 +150,17 @@ const rows = document.querySelectorAll('#roomTable tbody tr');
 
 function filterTable() {
     const searchVal = searchInput.value.toLowerCase();
-    // Lấy value (trong, bao_tri, dang_su_dung)
     const statusVal = statusFilter.value; 
 
     rows.forEach(row => {
         const name = row.cells[1].textContent.toLowerCase();
         const type = row.cells[2].textContent.toLowerCase();
         
-        // Lấy nội dung TEXT hiển thị (Trống, Bảo trì, Đang sử dụng)
         const statusText = row.cells[4].textContent.toLowerCase(); 
 
         const matchesSearch = name.includes(searchVal) || type.includes(searchVal);
         
-        // So sánh giá trị hiển thị (statusText) với giá trị đã chọn (statusVal), 
-        // vì trong rooms.php của bạn đã ánh xạ đúng (trong -> Trống)
-        let matchesStatus = !statusVal; // Nếu không chọn filter, luôn đúng
+        let matchesStatus = !statusVal; 
 
         if (statusVal === 'trong' && statusText.includes('trống')) {
             matchesStatus = true;
