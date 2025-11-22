@@ -106,7 +106,7 @@ Mở file db_connect.php (hoặc .env) trong project, chỉnh thông tin DB:
     function getDbConnection() {
         $servername = "localhost";
         $username = "root";
-        $password = "";
+        $password = "03092005";
         $dbname = "quanlyphonghoc";
         $port = 3306;
         $conn = mysqli_connect($servername, $username, $password, $dbname, $port);
