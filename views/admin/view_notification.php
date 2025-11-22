@@ -1,64 +1,76 @@
 <?php
-// Tệp này giả định nằm trong views/admin/
-include 'header.php'; 
+// views/admin/view_notification.php
+include 'header.php';
 require_once '../../functions/NotificationFunctions.php';
 
 $notiFn = new NotificationFunctions();
-$notification = null;
 
-if (isset($_GET['id'])) {
-    $id = intval($_GET['id']); 
-    $notification = $notiFn->getNotificationById($id); // Lấy theo noti_id
+// Lấy user_id hiện tại
+$user_id = $_SESSION['user']['user_id'] ?? 0;
+
+// Lấy ID thông báo từ query string
+$noti_id = $_GET['id'] ?? null;
+if (!$noti_id) {
+    header('Location: notifications_admin.php');
+    exit;
 }
 
-if (!$notification):
-?>
-    <div class="container-fluid">
-        <h1 class="mt-4">Thông báo không tồn tại</h1>
-        <p>Thông báo bạn đang tìm kiếm không có sẵn hoặc đã bị xóa.</p>
-        <a href="notifications_admin.php" class="btn btn-primary">Quay lại danh sách Thông báo</a>
-    </div>
-<?php else: 
-    // SỬA: Dùng cột sender_id
-    $creatorName = $notiFn->getCreatorFullname($notification['sender_id']); 
+// Đánh dấu đã đọc
+$notiFn->markAsRead($user_id, $noti_id);
+
+// Lấy thông tin chi tiết thông báo
+$notification = $notiFn->getNotificationById($noti_id);
+if (!$notification) {
+    header('Location: notifications_admin.php?msg=not_found');
+    exit;
+}
+
+// Lấy tên người tạo
+$creatorName = $notiFn->getCreatorFullname($notification['sender_id']);
 ?>
 
-<div class="container-fluid">
-    <h1 class="mt-4">📰 Chi tiết Thông báo</h1>
+<div class="container-fluid mt-4">
+    <h1 class="mb-4">📄 Xem Thông báo</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="index.php">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="dashboard_admin.php">Trang chủ</a></li>
         <li class="breadcrumb-item"><a href="notifications_admin.php">Thông báo</a></li>
         <li class="breadcrumb-item active">Chi tiết</li>
     </ol>
 
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h2 class="card-title mb-0"><?php echo htmlspecialchars($notification['title']); ?></h2>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white" style="font-weight:600;">
+            <?= htmlspecialchars($notification['title']) ?>
         </div>
         <div class="card-body">
-            <p class="text-muted small mb-3">
-                <strong>Người Gửi:</strong> <?php echo htmlspecialchars($creatorName); ?> | 
-                <strong>Thời gian:</strong> <?php echo date('H:i:s d/m/Y', strtotime($notification['created_at'])); ?> |
-                <strong>Trạng thái:</strong> 
-                <span class="badge bg-<?php echo $notification['status'] == 'read' ? 'success' : 'danger'; ?>">
-                    <?php echo $notification['status'] == 'read' ? 'Đã đọc' : 'Chưa đọc'; ?>
-                </span>
+            <p class="text-muted mb-2">
+                <strong>Người gửi:</strong> <?= htmlspecialchars($creatorName) ?><br>
+                <strong>Thời gian:</strong> <?= date('d/m/Y H:i', strtotime($notification['created_at'])) ?>
             </p>
             <hr>
+            <p><?= nl2br(htmlspecialchars($notification['message'])) ?></p>
 
-            <div class="notification-content">
-                <?php echo nl2br(htmlspecialchars($notification['message'])); ?>
+            <div class="mt-4">
+                <a href="notifications_admin.php" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Quay lại</a>
+                <a href="../../handles/handle_notification.php?delete_id=<?= $notification['noti_id'] ?>" 
+                   class="btn btn-danger"
+                   onclick="return confirm('Bạn có chắc chắn muốn xóa thông báo này?');">
+                   <i class="fas fa-trash me-1"></i>Xóa
+                </a>
             </div>
-
-        </div>
-        <div class="card-footer">
-            <a href="notifications_admin.php" class="btn btn-secondary">Quay lại</a>
-            <a href="../../handlers/handle_notification.php?delete_id=<?php echo $notification['noti_id']; ?>" class="btn btn-danger float-end" 
-               onclick="return confirm('Bạn có chắc chắn muốn xóa thông báo này?');">Xóa Thông báo</a>
         </div>
     </div>
 </div>
 
-<?php endif; 
-include 'footer.php'; 
-?>
+<style>
+    body {
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<?php include 'footer.php'; ?>
