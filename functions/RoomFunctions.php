@@ -1,11 +1,14 @@
 <?php
+// functions/RoomFunctions.php
+
 require_once __DIR__ . '/db_connect.php';
 
 class RoomFunctions {
     private $conn;
 
     public function __construct() {
-        $this->conn = connectDB();
+        // Đảm bảo hàm connectDB() tồn tại trong db_connect.php
+        $this->conn = connectDB(); 
     }
 
     public function getAllRooms() {
