@@ -11,6 +11,9 @@
   <a href="rooms.php" class="list-group-item list-group-item-action d-flex align-items-center py-3 fw-semibold border-0">
     <span class="me-3 fs-5 text-warning">🏫</span> Phòng học
   </a>
+    <a href="equipments.php" class="list-group-item list-group-item-action d-flex align-items-center py-3 fw-semibold border-0">
+    <span class="me-3 fs-5 text-success">🔧</span> Thiết bị
+  </a>
   <a href="subjects.php" class="list-group-item list-group-item-action d-flex align-items-center py-3 fw-semibold border-0">
     <span class="me-3 fs-5 text-danger">📘</span> Môn học
   </a>
@@ -26,6 +29,7 @@
 </div>
 
 <style>
+/* (Giữ nguyên phần style CSS của bạn) */
 .list-group-item {
   background-color: #fff;
   transition: all 0.2s ease-in-out;
@@ -44,3 +48,4 @@
   filter: brightness(0) invert(1);
 }
 </style>
+
