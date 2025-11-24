@@ -44,17 +44,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $start_time_only = $_POST['start_time']; // Dạng HH:MM
             $end_time_only = $_POST['end_time']; // Dạng HH:MM
             
-            // 🚨 FIX LỖI 1: Tránh "Undefined array key "purpose"". Sử dụng ?? ''
+            // FIX LỖI 1: Tránh "Undefined array key "purpose"". Sử dụng ?? ''
             $purpose = trim($_POST['purpose'] ?? ''); 
             
-            // 🚨 FIX LỖI 2: Tạo chuỗi DATETIME hoàn chỉnh (YYYY-MM-DD HH:MM:SS)
+            // FIX LỖI 2: Tạo chuỗi DATETIME hoàn chỉnh (YYYY-MM-DD HH:MM:SS)
             $full_start_time = $date . ' ' . $start_time_only . ':00';
             $full_end_time = $date . ' ' . $end_time_only . ':00';
             
             // Lưu ý: hàm checkRoomAvailability phải được sửa để nhận $full_start_time, $full_end_time (nếu nó chưa được sửa)
             if (!checkRoomAvailability($conn, $room_id, $date, $start_time_only, $end_time_only)) { // Giữ nguyên tham số cũ nếu checkRoomAvailability chưa được sửa
                 $_SESSION['error_message'] = "Phòng đã có lịch vào thời gian bạn yêu cầu. Vui lòng chọn thời gian khác.";
-            // 🚨 FIX LỖI 3: Thêm $subject_id vào lệnh gọi hàm (tham số thứ 8, sau $purpose)
+            // LỆNH GỌI HÀM: Đã truyền đủ 8 tham số.
             } else if (requestRoomBooking($conn, $user_id, $room_id, $date, $full_start_time, $full_end_time, $purpose, $subject_id)) {
                 $_SESSION['success_message'] = "Yêu cầu đặt phòng đã được gửi thành công và đang chờ Admin duyệt.";
             } else {
