@@ -11,14 +11,16 @@ class ScheduleFunctions {
     // Lấy tất cả lịch (cho giảng viên hoặc admin), join phòng, môn, lớp
     public function getAllSchedules() {
         $sql = "SELECT sc.schedule_id, sc.room_id, sc.user_id, sc.subject_id, sc.class_id,
-                       DATE(sc.start_time) AS date,
-                       TIME(sc.start_time) AS start_time,
-                       TIME(sc.end_time) AS end_time,
-                       sc.note,
-                       r.room_name,
-                       s.subject_name,
-                       c.class_name,
-                       u.fullname AS lecturer_name
+                        DATE(sc.start_time) AS date,
+                        TIME(sc.start_time) AS start_time,
+                        TIME(sc.end_time) AS end_time,
+                        sc.start_time AS full_start_time,
+                        sc.end_time AS full_end_time,
+                        sc.note,
+                        r.room_name,
+                        s.subject_name,
+                        c.class_name,
+                        u.fullname AS lecturer_name
                 FROM schedules sc
                 LEFT JOIN rooms r ON sc.room_id = r.room_id
                 LEFT JOIN subjects s ON sc.subject_id = s.subject_id
@@ -42,57 +44,82 @@ class ScheduleFunctions {
         }
         $stmt->execute();
         $res = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
         return ($res['cnt'] > 0);
     }
 
-    // Thêm lịch
+    // Thêm lịch (class_id có thể null)
     public function addSchedule($room_id, $user_id, $subject_id, $class_id, $start_time, $end_time, $note = null) {
         if ($this->isConflict($room_id, $start_time, $end_time)) return "conflict";
-        $stmt = $this->conn->prepare("INSERT INTO schedules (room_id, user_id, subject_id, class_id, start_time, end_time, note) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("iiiisss", $room_id, $user_id, $subject_id, $class_id, $start_time, $end_time, $note);
-        return $stmt->execute();
+        
+        // Logic để chèn class_id=NULL nếu $class_id là null
+        if ($class_id === null) {
+            $stmt = $this->conn->prepare("INSERT INTO schedules (room_id, user_id, subject_id, class_id, start_time, end_time, note) VALUES (?, ?, ?, NULL, ?, ?, ?)");
+            $stmt->bind_param("iiisss", $room_id, $user_id, $subject_id, $start_time, $end_time, $note);
+        } else {
+            $stmt = $this->conn->prepare("INSERT INTO schedules (room_id, user_id, subject_id, class_id, start_time, end_time, note) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("iiiisss", $room_id, $user_id, $subject_id, $class_id, $start_time, $end_time, $note);
+        }
+        
+        $res = $stmt->execute();
+        $stmt->close();
+        return $res;
     }
 
-    // Cập nhật lịch
+    // Cập nhật lịch (class_id có thể null)
+    // FIX LỖI: Cập nhật định nghĩa hàm để nhận $class_id
     public function updateSchedule($schedule_id, $room_id, $user_id, $subject_id, $class_id, $start_time, $end_time, $note = null) {
         if ($this->isConflict($room_id, $start_time, $end_time, $schedule_id)) return "conflict";
-        $stmt = $this->conn->prepare("UPDATE schedules SET room_id=?, user_id=?, subject_id=?, class_id=?, start_time=?, end_time=?, note=? WHERE schedule_id=?");
-        $stmt->bind_param("iiiissi", $room_id, $user_id, $subject_id, $class_id, $start_time, $end_time, $note, $schedule_id);
-        return $stmt->execute();
+
+        // Logic để chèn class_id=NULL nếu $class_id là null
+        if ($class_id === null) {
+            $stmt = $this->conn->prepare("UPDATE schedules SET room_id=?, user_id=?, subject_id=?, class_id=NULL, start_time=?, end_time=?, note=? WHERE schedule_id=?");
+            $stmt->bind_param("iiisssi", $room_id, $user_id, $subject_id, $start_time, $end_time, $note, $schedule_id);
+        } else {
+            $stmt = $this->conn->prepare("UPDATE schedules SET room_id=?, user_id=?, subject_id=?, class_id=?, start_time=?, end_time=?, note=? WHERE schedule_id=?");
+            $stmt->bind_param("iiiisssi", $room_id, $user_id, $subject_id, $class_id, $start_time, $end_time, $note, $schedule_id);
+        }
+
+        $res = $stmt->execute();
+        $stmt->close();
+        return $res;
     }
 
     public function deleteSchedule($id) {
         $stmt = $this->conn->prepare("DELETE FROM schedules WHERE schedule_id = ?");
         $stmt->bind_param("i", $id);
-        return $stmt->execute();
+        $res = $stmt->execute();
+        $stmt->close();
+        return $res;
     }
 
     public function getScheduleById($id) {
         $stmt = $this->conn->prepare("SELECT * FROM schedules WHERE schedule_id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        $res = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return $res;
     }
 
     // ===============================================
     // Dành cho giảng viên (lecturer)
     // ===============================================
 
-    // Lấy tất cả lớp
     public function getAllClasses() {
         $res = $this->conn->query("SELECT class_id, class_name FROM classes ORDER BY class_name ASC");
         return $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    // Lấy môn học theo giảng viên
     public function getSubjectsByLecturerId($lecturer_id) {
         $stmt = $this->conn->prepare("SELECT subject_id, subject_name FROM subjects WHERE lecturer_id = ? ORDER BY subject_name ASC");
         $stmt->bind_param("i", $lecturer_id);
         $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $res = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        return $res;
     }
 
-    // Đếm số lịch dạy theo ngày
     public function countSchedulesByLecturerAndDate($lecturer_id, $date) {
         $stmt = $this->conn->prepare("SELECT COUNT(schedule_id) FROM schedules WHERE user_id=? AND DATE(start_time)=?");
         $stmt->bind_param("is", $lecturer_id, $date);
@@ -103,7 +130,6 @@ class ScheduleFunctions {
         return $count;
     }
 
-    // Lấy lịch theo ngày
     public function getSchedulesByLecturerAndDate($lecturer_id, $date) {
         $stmt = $this->conn->prepare("
             SELECT sc.schedule_id, TIME(sc.start_time) AS start_time, TIME(sc.end_time) AS end_time, r.room_name, s.subject_name
@@ -115,10 +141,11 @@ class ScheduleFunctions {
         ");
         $stmt->bind_param("is", $lecturer_id, $date);
         $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $res = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        return $res;
     }
 
-    // Lấy phòng đang dạy hoặc ca tiếp theo
     public function getCurrentTeachingRoom($lecturer_id) {
         $now = date('Y-m-d H:i:s');
 
@@ -132,7 +159,12 @@ class ScheduleFunctions {
         $stmt->bind_param("iss", $lecturer_id, $now, $now);
         $stmt->execute();
         $res = $stmt->get_result();
-        if ($res->num_rows > 0) return $res->fetch_assoc();
+        if ($res->num_rows > 0) {
+            $row = $res->fetch_assoc();
+            $stmt->close();
+            return $row;
+        }
+        $stmt->close();
 
         $stmt2 = $this->conn->prepare("
             SELECT r.room_name
@@ -144,11 +176,13 @@ class ScheduleFunctions {
         ");
         $stmt2->bind_param("is", $lecturer_id, $now);
         $stmt2->execute();
-        return $stmt2->get_result()->fetch_assoc();
+        $res2 = $stmt2->get_result()->fetch_assoc();
+        $stmt2->close();
+        return $res2;
     }
 
     public function __destruct() {
-        // nếu muốn: $this->conn->close();
+        // $this->conn->close(); // tuỳ muốn đóng
     }
 }
 ?>
