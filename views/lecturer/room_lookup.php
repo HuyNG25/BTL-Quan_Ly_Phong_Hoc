@@ -36,10 +36,18 @@ closeDB($conn);
         .page-title { font-size: 28px; font-weight: 700; margin-bottom: 20px; }
         .card { border-radius: 15px; }
         .table-hover tbody tr:hover { background: rgba(0,123,255,0.05); }
-        #back-btn { margin-bottom: 20px; }
-        .modal-header { border-bottom: none; }
-        .modal-footer { border-top: none; }
-        .form-label { font-weight: 600; }
+
+        /* Scroll + Sticky header */
+        .table-responsive {
+            max-height: 450px;
+            overflow-y: auto;
+        }
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #f8f9fa !important;
+        }
     </style>
 </head>
 <body class="p-4">
@@ -72,36 +80,42 @@ closeDB($conn);
     </div>
 
     <div class="card-body p-0">
-        <table class="table table-hover mb-0" id="roomTable">
-            <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Tên Phòng</th>
-                    <th>Sức chứa</th>
-                    <th>Trạng thái</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($rooms as $room): ?>
-                <tr>
-                    <td><?= $room['room_id']; ?></td>
-                    <td class="fw-bold"><?= $room['room_name']; ?></td>
-                    <td><?= $room['capacity']; ?></td>
-                    <td><span class="badge bg-info">Kiểm tra khi đặt</span></td>
-                    <td>
-                        <button 
-                            class="btn btn-sm btn-success"
-                            data-bs-toggle="modal" 
-                            data-bs-target="#bookingModal"
-                            data-room="<?= $room['room_id']; ?>"
-                            data-roomname="<?= $room['room_name']; ?>"
-                        >Đặt phòng</button>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+
+        <!-- BẢNG CÓ SCROLL VÀ HEADER CỐ ĐỊNH -->
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="roomTable" style="border-collapse: separate; border-spacing: 0;">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên Phòng</th>
+                        <th>Sức chứa</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php foreach ($rooms as $room): ?>
+                    <tr>
+                        <td><?= $room['room_id']; ?></td>
+                        <td class="fw-bold"><?= $room['room_name']; ?></td>
+                        <td><?= $room['capacity']; ?></td>
+                        <td><span class="badge bg-info">Kiểm tra khi đặt</span></td>
+                        <td>
+                            <button 
+                                class="btn btn-sm btn-success"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#bookingModal"
+                                data-room="<?= $room['room_id']; ?>"
+                                data-roomname="<?= $room['room_name']; ?>"
+                            >Đặt phòng</button>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
     </div>
 </div>
 
@@ -177,7 +191,9 @@ document.addEventListener('DOMContentLoaded', function() {
         var table = document.getElementById('roomTable');
         var tr = table.getElementsByTagName('tr');
         for (var i = 1; i < tr.length; i++) {
-            tr[i].style.display = tr[i].textContent.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+            tr[i].style.display =
+                tr[i].textContent.toUpperCase().indexOf(filter) > -1
+                ? "" : "none";
         }
     });
 });
@@ -185,3 +201,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </body>
 </html>
+
