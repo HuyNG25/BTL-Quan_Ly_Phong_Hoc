@@ -51,7 +51,7 @@ Hệ thống Quản lý Phòng Học giúp tối ưu hóa việc sử dụng cơ
 ### Trang đăng nhập
 <img width="1902" height="931" alt="image" src="./login.png" />
 ### Trang dashboard admin
-<img width="1886" height="940" alt="image" src="./dashboard_admin.png" />
+<img width="1886" height="940" alt="image" src="./trangchu.png" />
 ### Trang thông tin tài khoản    
 <img width="1890" height="932" alt="image" src="./thongtintaikhoan.png" />
 ### Trang người dùng 
