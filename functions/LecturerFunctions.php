@@ -2,7 +2,7 @@
 // functions/LecturerFunctions.php
 
 // ---------------------------------------------------
-// 1. Lấy lịch dạy cá nhân (từ room_bookings) - chuẩn, tránh null
+// 1. Lấy lịch dạy cá nhân (từ room_bookings)
 // ---------------------------------------------------
 function getAllSchedule($conn, $lecturer_id) {
     $sql = "SELECT 
@@ -26,16 +26,23 @@ function getAllSchedule($conn, $lecturer_id) {
 
 // ---------------------------------------------------
 // 2. Gửi yêu cầu đặt phòng mới
+// FIX LỖI: Sửa chuỗi bind_param để khớp chính xác với 8 tham số.
 // ---------------------------------------------------
-function requestRoomBooking($conn, $lecturer_id, $room_id, $date, $start_time, $end_time, $purpose) {
+function requestRoomBooking($conn, $lecturer_id, $room_id, $date, $full_start_time, $full_end_time, $purpose, $subject_id) {
     $status = 'pending';
 
     $sql = "INSERT INTO room_requests 
-            (lecturer_id, room_id, request_date, start_time, end_time, purpose, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
+            (lecturer_id, room_id, request_date, start_time, end_time, purpose, status, subject_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iisssss", $lecturer_id, $room_id, $date, $start_time, $end_time, $purpose, $status);
+    
+    // ĐÃ SỬA: "iisssssi" - Đảm bảo start_time và end_time là 's'
+    // lecturer_id(i), room_id(i), request_date(s), start_time(s), end_time(s), purpose(s), status(s), subject_id(i)
+    if (!$stmt->bind_param("iisssssi", $lecturer_id, $room_id, $date, $full_start_time, $full_end_time, $purpose, $status, $subject_id)) {
+        // Có thể thêm log lỗi bind_param tại đây nếu cần
+        return false; 
+    }
 
     return $stmt->execute();
 }
@@ -167,4 +174,4 @@ function getAllNotifications($conn, $user_id) {
 
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
-?>  
+?>
